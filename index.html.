@@ -1,0 +1,376 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STUDY LEVEL UP</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(145deg,#10051d,#351052,#160820);color:white;font-family:Arial}
+header{text-align:center;padding:20px;background:#190b29;border-bottom:1px solid #7540a8}
+h1{color:#d9aaff;margin:0}
+nav{display:flex;overflow:auto;gap:7px;padding:12px}
+button{background:#572581;color:white;border:1px solid #b66aff;border-radius:9px;padding:10px;cursor:pointer}
+button.active,.primary{background:#a33be0}
+main{padding:12px;max-width:900px;margin:auto}
+.page{display:none}.page.active{display:block}
+.card{background:#251137;border:1px solid #71449a;border-radius:14px;padding:15px;margin-bottom:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
+.big{font-size:26px;color:#e5baff;font-weight:bold}
+.muted{color:#c8addd;font-size:13px}
+input,select{width:100%;padding:11px;margin:5px 0 12px;background:#160a22;color:white;border:1px solid #8050a5;border-radius:8px}
+.progress{height:10px;background:#100819;border-radius:10px;overflow:hidden;margin:9px 0}
+.progress span{display:block;height:100%;background:#d34cff}
+.topic{padding:10px;border-bottom:1px solid #54356b}
+canvas{width:100%;max-width:100%;background:#190d27;border-radius:10px}
+#timer{text-align:center;font-size:45px;padding:20px;color:#e8c5ff}
+.avatar{font-size:38px}
+</style>
+</head>
+<body>
+<header>
+<h1>⚡ STUDY LEVEL UP</h1>
+<p class="muted">Study. Earn XP. Become LEGEND.</p>
+</header>
+<nav>
+<button class="active" onclick="page('home',this)">Home</button>
+<button onclick="page('profile',this)">Profile</button>
+<button onclick="page('lessons',this)">Lessons</button>
+<button onclick="page('charts',this)">Analytics</button>
+<button onclick="page('focus',this)">Focus</button>
+<button onclick="page('settings',this)">Settings</button>
+</nav>
+<main>
+
+<section id="home" class="page active">
+<div class="grid">
+<div class="card"><div class="muted">RANK</div><div class="big" id="rank">BEGINNER</div><div id="level">Level 1</div></div>
+<div class="card"><div class="muted">TOTAL XP</div><div class="big" id="xp">0</div></div>
+<div class="card"><div class="muted">TOPICS DONE</div><div class="big" id="done">0</div></div>
+<div class="card"><div class="muted">STUDY MINUTES</div><div class="big" id="minutes">0</div></div>
+</div>
+<div class="card">
+<h3>Level Progress</h3>
+<div class="progress"><span id="xpbar"></span></div>
+<p id="xptext" class="muted">0 / 100 XP</p>
+</div>
+<div class="card">
+<h3>Daily Mission</h3>
+<p>Complete one focus session or study topic.</p>
+<button class="primary" id="mission" onclick="claimMission()">Claim +30 XP</button>
+</div>
+<div class="card">
+<h3>Quick Guide</h3>
+<p class="muted">Add every subject, lesson and topic in the Lessons section. Mark topics complete after studying them.</p>
+</div>
+</section>
+
+<section id="profile" class="page">
+<div class="card">
+<h2>Player Profile</h2>
+<div class="avatar" id="avatarView">🧙</div>
+<h2 id="playerName">MR.FOOL</h2>
+<div class="big" id="profileRank">BEGINNER</div>
+<p id="profileLevel">Level 1</p>
+<div class="grid">
+<div>Total XP <div class="big" id="profileXP">0</div></div>
+<div>Study minutes <div class="big" id="profileMinutes">0</div></div>
+<div>Topics completed <div class="big" id="profileDone">0</div></div>
+<div>Focus sessions <div class="big" id="profileSessions">0</div></div>
+</div>
+</div>
+<div class="card">
+<h3>Edit Player</h3>
+<label>Player name</label>
+<input id="nameInput" maxlength="24">
+<label>Avatar</label>
+<select id="avatarInput">
+<option>🧙</option><option>⚔️</option><option>🐉</option>
+<option>🦊</option><option>👑</option><option>🧠</option>
+</select>
+<button onclick="saveProfile()">Save Profile</button>
+</div>
+<div class="card"><h3>Achievements</h3><p id="achievements">No achievements yet.</p></div>
+</section>
+
+<section id="lessons" class="page">
+<div class="card">
+<h2>Subject & Lesson Tracker</h2>
+<label>Subject</label><input id="subject" placeholder="Science 1">
+<label>Lesson</label><input id="lesson" placeholder="Lesson 1 - Gravitation">
+<label>Topic</label><input id="topic" placeholder="Universal law of gravitation">
+<button class="primary" onclick="addTopic()">＋ Add Topic</button>
+</div>
+<div class="card">
+<h3>Your Topics</h3>
+<div id="topicList">No topics added yet.</div>
+</div>
+</section>
+
+<section id="charts" class="page">
+<div class="card">
+<h2>Topic Completion Pie Chart</h2>
+<canvas id="pie" width="600" height="300"></canvas>
+<p id="pieText" class="muted"></p>
+</div>
+<div class="card">
+<h2>Subject Progress Bar Graph</h2>
+<canvas id="bars" width="600" height="300"></canvas>
+</div>
+<div class="card">
+<h3>Lesson Progress</h3>
+<div id="lessonStats"></div>
+</div>
+</section>
+
+<section id="focus" class="page">
+<div class="card">
+<h2>25-Minute Focus Timer</h2>
+<div id="timer">25:00</div>
+<div style="display:flex;gap:8px;justify-content:center">
+<button class="primary" onclick="startTimer()">Start</button>
+<button onclick="pauseTimer()">Pause</button>
+<button onclick="resetTimer()">Reset</button>
+</div>
+<p class="muted">Finish the session to earn 25 XP.</p>
+</div>
+</section>
+
+<section id="settings" class="page">
+<div class="card">
+<h2>Player Settings</h2>
+<button onclick="backup()">Export Backup</button>
+<p class="muted">Save your study progress as a backup file.</p>
+<label>Restore backup</label>
+<input type="file" id="restoreFile" accept=".json">
+</div>
+<div class="card">
+<h3>Reset Progress</h3>
+<button onclick="resetAll()" style="background:#922222">Reset Everything</button>
+</div>
+</section>
+
+</main>
+<script>
+const KEY="slu_ultimate_v2";
+function fresh(){
+return {name:"MR.FOOL",avatar:"🧙",xp:0,minutes:0,
+sessions:0,topics:[],mission:""};
+}
+let data;
+try{
+data={...fresh(),...JSON.parse(localStorage.getItem(KEY)||"{}")};
+if(!Array.isArray(data.topics))data.topics=[];
+}catch(e){data=fresh()}
+
+function save(){
+localStorage.setItem(KEY,JSON.stringify(data));
+render();
+}
+function page(id,btn){
+document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+btn.classList.add("active");
+if(id==="charts")drawCharts();
+}
+function rank(){
+let ranks=[["BEGINNER",0],["LEARNER",100],["FIGHTER",300],
+["SCHOLAR",600],["ELITE",1000],["MASTER",1500],
+["GRANDMASTER",2500],["LEGEND",4000]];
+let r=ranks[0];
+ranks.forEach(x=>{if(data.xp>=x[1])r=x});
+return {name:r[0],level:Math.floor(data.xp/100)+1,
+progress:data.xp%100};
+}
+function completed(){return data.topics.filter(t=>t.done).length}
+function esc(s){
+return String(s).replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+}
+function render(){
+let r=rank(),n=completed();
+rankEl("rank",r.name);
+document.getElementById("level").textContent="Level "+r.level;
+document.getElementById("xp").textContent=data.xp;
+document.getElementById("done").textContent=n;
+document.getElementById("minutes").textContent=data.minutes;
+document.getElementById("xpbar").style.width=r.progress+"%";
+document.getElementById("xptext").textContent=r.progress+" / 100 XP";
+document.getElementById("playerName").textContent=data.name;
+document.getElementById("avatarView").textContent=data.avatar;
+document.getElementById("profileRank").textContent=r.name;
+document.getElementById("profileLevel").textContent="Level "+r.level;
+document.getElementById("profileXP").textContent=data.xp;
+document.getElementById("profileMinutes").textContent=data.minutes;
+document.getElementById("profileDone").textContent=n;
+document.getElementById("profileSessions").textContent=data.sessions;
+document.getElementById("nameInput").value=data.name;
+document.getElementById("avatarInput").value=data.avatar;
+document.getElementById("mission").disabled=data.mission===new Date().toDateString();
+document.getElementById("mission").textContent=
+data.mission===new Date().toDateString()?"Mission completed today":"Claim +30 XP";
+let a=[];
+if(n>=1)a.push("🏅 First Topic");
+if(n>=10)a.push("📚 Topic Collector");
+if(data.sessions>=1)a.push("⏱️ Focus Starter");
+if(data.xp>=1000)a.push("👑 Elite Scholar");
+document.getElementById("achievements").textContent=a.join(" • ")||"No achievements yet.";
+renderTopics();
+}
+function rankEl(id,value){document.getElementById(id).textContent=value}
+function saveProfile(){
+data.name=document.getElementById("nameInput").value.trim()||"Player";
+data.avatar=document.getElementById("avatarInput").value;
+save();
+alert("Profile saved!");
+}
+function claimMission(){
+if(data.mission===new Date().toDateString())return;
+data.xp+=30;data.mission=new Date().toDateString();save();
+}
+function addTopic(){
+let s=document.getElementById("subject").value.trim();
+let l=document.getElementById("lesson").value.trim();
+let t=document.getElementById("topic").value.trim();
+if(!s||!l||!t){alert("Enter subject, lesson and topic.");return}
+if(data.topics.some(x=>x.subject===s&&x.lesson===l&&x.topic===t)){
+alert("Topic already exists.");return;
+}
+data.topics.push({subject:s,lesson:l,topic:t,done:false});
+["subject","lesson","topic"].forEach(x=>document.getElementById(x).value="");
+save();
+}
+function renderTopics(){
+let box=document.getElementById("topicList");
+if(!data.topics.length){box.textContent="No topics added yet.";return}
+let groups={};
+data.topics.forEach((t,i)=>{
+let k=t.subject+"|||"+t.lesson;
+(groups[k]??=[]).push({...t,i});
+});
+box.innerHTML=Object.entries(groups).map(([k,items])=>{
+let [s,l]=k.split("|||");
+return `<div class="topic"><b>${esc(s)} — ${esc(l)}</b>
+${items.map(t=>`<div style="padding:8px 0">
+<label><input type="checkbox" data-check="${t.i}" ${t.done?"checked":""} style="width:auto">
+${esc(t.topic)}</label>
+<button onclick="deleteTopic(${t.i})">Delete</button>
+</div>`).join("")}</div>`;
+}).join("");
+box.querySelectorAll("[data-check]").forEach(c=>{
+c.onchange=()=>{
+let t=data.topics[Number(c.dataset.check)];
+if(c.checked&&!t.done){t.done=true;data.xp+=10}
+else if(!c.checked&&t.done){t.done=false;data.xp=Math.max(0,data.xp-10)}
+save();
+};
+});
+}
+function deleteTopic(i){
+if(confirm("Delete this topic?")){
+data.topics.splice(i,1);save();
+}
+}
+function drawCharts(){
+let c=document.getElementById("pie"),ctx=c.getContext("2d");
+ctx.clearRect(0,0,c.width,c.height);
+let d=completed(),p=data.topics.length-d;
+if(!data.topics.length){
+ctx.fillStyle="white";ctx.font="18px Arial";
+ctx.fillText("Add topics to see your chart",150,150);
+}else{
+let start=-Math.PI/2,total=d+p;
+[[d,"#c084fc"],[p,"#57336f"]].forEach(([v,col])=>{
+let angle=v/total*Math.PI*2;
+ctx.beginPath();ctx.moveTo(300,150);
+ctx.arc(300,150,105,start,start+angle);
+ctx.closePath();ctx.fillStyle=col;ctx.fill();start+=angle;
+});
+ctx.fillStyle="white";ctx.font="bold 22px Arial";
+ctx.textAlign="center";
+ctx.fillText(Math.round(d/total*100)+"%",300,157);
+}
+document.getElementById("pieText").textContent=
+"Completed: "+d+" | Pending: "+p;
+let b=document.getElementById("bars"),g=b.getContext("2d");
+g.clearRect(0,0,b.width,b.height);
+let subjects=[...new Set(data.topics.map(t=>t.subject))];
+if(!subjects.length){
+g.fillStyle="white";g.font="18px Arial";
+g.fillText("Add subjects to see your graph",150,150);
+}else{
+let max=Math.max(1,...subjects.map(s=>data.topics.filter(t=>t.subject===s&&t.done).length));
+let slot=540/subjects.length;
+subjects.forEach((s,i)=>{
+let n=data.topics.filter(t=>t.subject===s&&t.done).length;
+let h=n/max*200,x=35+i*slot;
+g.fillStyle="#b45bea";g.fillRect(x,240-h,slot*.55,h);
+g.fillStyle="white";g.font="13px Arial";g.textAlign="center";
+g.fillText(n,x+slot*.27,230-h);
+g.save();g.translate(x+slot*.27,260);g.rotate(-.3);
+g.fillText(s.slice(0,15),0,0);g.restore();
+});
+}
+let stats={};
+data.topics.forEach(t=>{
+let k=t.subject+" — "+t.lesson;
+(stats[k]??={all:0,done:0}).all++;
+if(t.done)stats[k].done++;
+});
+document.getElementById("lessonStats").innerHTML=
+Object.entries(stats).map(([k,v])=>
+`<p>${esc(k)}: ${v.done}/${v.all} completed (${Math.round(v.done/v.all*100)}%)</p>
+<div class="progress"><span style="width:${v.done/v.all*100}%"></span></div>`
+).join("")||"Add topics to see lesson progress.";
+}
+let seconds=1500,timer=null;
+function showTimer(){
+document.getElementById("timer").textContent=
+String(Math.floor(seconds/60)).padStart(2,"0")+":"+
+String(seconds%60).padStart(2,"0");
+}
+function startTimer(){
+if(timer)return;
+timer=setInterval(()=>{
+seconds--;showTimer();
+if(seconds<=0){
+clearInterval(timer);timer=null;
+data.xp+=25;data.minutes+=25;data.sessions++;
+seconds=1500;showTimer();save();
+alert("Focus complete! +25 XP");
+}
+},1000);
+}
+function pauseTimer(){clearInterval(timer);timer=null}
+function resetTimer(){pauseTimer();seconds=1500;showTimer()}
+function backup(){
+let blob=new Blob([JSON.stringify(data)],{type:"application/json"});
+let a=document.createElement("a");
+a.href=URL.createObjectURL(blob);
+a.download="study-level-up-backup.json";a.click();
+URL.revokeObjectURL(a.href);
+}
+document.getElementById("restoreFile").onchange=e=>{
+let file=e.target.files[0];if(!file)return;
+let reader=new FileReader();
+reader.onload=()=>{
+try{
+let x=JSON.parse(reader.result);
+if(!Array.isArray(x.topics)||typeof x.xp!=="number")throw Error();
+data={...fresh(),...x};save();alert("Backup restored!");
+}catch(err){alert("Invalid backup file.");}
+};
+reader.readAsText(file);
+};
+function resetAll(){
+if(confirm("Reset all progress permanently? Export a backup first if needed.")){
+data=fresh();save();alert("Progress reset.");
+}
+}
+render();showTimer();
+</script>
+</body>
+</html>
